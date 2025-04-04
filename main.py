@@ -13,6 +13,19 @@ def setup_system():
     # Configure root device from config
     system.root_device.cpu_speed = config.ROOT_DEVICE["cpu_speed"]
     system.root_device.num_cores = config.ROOT_DEVICE["num_cores"]
+
+    # Configure vertical load balancer
+    system.vertical_balancer.cpu_threshold = config.VERTICAL_BALANCER["cpu_threshold"]
+    system.vertical_balancer.deadline_threshold = config.VERTICAL_BALANCER["deadline_threshold"]
+    system.vertical_balancer.task_count_threshold = config.VERTICAL_BALANCER["task_count_threshold"]
+    system.vertical_balancer.decision_mode = config.VERTICAL_BALANCER.get("decision_mode", "weighted")
+    system.vertical_balancer.weights = config.VERTICAL_BALANCER.get("weights", {
+        "cpu": 0.4,
+        "deadline": 0.3,
+        "computation": 0.2,
+        "task_count": 0.1
+    })
+    system.vertical_balancer.cloud_threshold = config.VERTICAL_BALANCER.get("cloud_threshold", 60)
     
     # Add edge devices from config
     for device_config in config.EDGE_DEVICES:
@@ -113,14 +126,20 @@ def main():
     print(f"Total tasks: {args.tasks}")
     
     for condition, result in results["experiments"].items():
-        print(f"\nCondition: {condition}")
-        print(f"  Cloud tasks: {result['vertical_balancer_stats']['cloud']['count']}")
-        print(f"  Edge tasks: {result['vertical_balancer_stats']['edge']['count']}")
-        print(f"  Skipped tasks: {result['vertical_balancer_stats']['skip']['count']}")
-        print(f"  Missed deadlines: {result['system_stats']['deadline_performance']['missed_deadlines']}")
-        print(f"  Miss rate: {result['system_stats']['deadline_performance']['miss_rate']:.2f}%")
-        print(f"  Avg execution time (edge): {result['system_stats']['execution_time']['edge']:.4f}s")
-        print(f"  Avg execution time (cloud): {result['system_stats']['execution_time']['cloud']:.4f}s")
+    # Add a special header if it's the weighted approach
+        if condition == "weighted":
+            print("\n----- WEIGHTED DECISION MODEL RESULTS -----")
+        else:
+            print(f"\nCondition: {condition}")
+            
+            # Rest of your printing code remains the same
+            print(f"  Cloud tasks: {result['vertical_balancer_stats']['cloud']['count']}")
+            print(f"  Edge tasks: {result['vertical_balancer_stats']['edge']['count']}")
+            print(f"  Skipped tasks: {result['vertical_balancer_stats']['skip']['count']}")
+            print(f"  Missed deadlines: {result['system_stats']['deadline_performance']['missed_deadlines']}")
+            print(f"  Miss rate: {result['system_stats']['deadline_performance']['miss_rate']:.2f}%")
+            print(f"  Avg execution time (edge): {result['system_stats']['execution_time']['edge']:.4f}s")
+            print(f"  Avg execution time (cloud): {result['system_stats']['execution_time']['cloud']:.4f}s")
 
 if __name__ == "__main__":
     main()

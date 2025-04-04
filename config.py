@@ -5,7 +5,17 @@
 VERTICAL_BALANCER = {
     "cpu_threshold": 33,         # CPU utilization percentage threshold
     "deadline_threshold": 7,     # Task deadline threshold in seconds
-    "task_count_threshold": 25   # Number of edge tasks before cloud offloading
+    "task_count_threshold": 25,  # Number of edge tasks before cloud offloading
+    
+    # New weighted model configuration
+    "decision_mode": "weighted", # Options: "cpu", "deadline", "count", "weighted" 
+    "weights": {
+        "cpu": 0.4,              # Weight for CPU utilization (40%)
+        "deadline": 0.3,         # Weight for task deadline (30%)
+        "computation": 0.2,      # Weight for computational needs (20%)
+        "task_count": 0.1        # Weight for recent edge execution count (10%)
+    },
+    "cloud_threshold": 60        # Score threshold for cloud offloading decision (0-100)
 }
 
 # Cloud connection settings
@@ -48,13 +58,14 @@ TASK_GENERATION = {
     "sensitive_data_ratio": 0.2  # Ratio of tasks with sensitive data
 }
 
-# Experiment configurations
+# Around line 43-50 in config.py
 EXPERIMENTS = {
     "num_tasks": 1000,           # Default number of tasks per experiment
     "conditions": [              # Load balancing conditions to test
         "cpu",
         "deadline",
-        "count"
+        "count",
+        "weighted"               # Add the new weighted condition here
     ]
 }
 
